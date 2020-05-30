@@ -1,5 +1,10 @@
+import flask
 import aiml
 import os
+from waitress import serve
+
+app = flask.Flask(__name__)
+app.config["DEBUG"] = True
 
 kernel = aiml.Kernel()
 
@@ -9,12 +14,13 @@ else:
     kernel.bootstrap(learnFiles = os.path.abspath("brain.aiml"), commands = "load aiml b")
     kernel.saveBrain("bot_brain.brn")
 
-while True:
-    message = input("Enter your message to the bot: ")
-    if message == "quit":
-        exit()
-    elif message == "save":
-        kernel.saveBrain("bot_brain.brn")
-    else:
-        bot_response = kernel.respond(message)
-        print(bot_response)
+@app.route('/', methods=['POST'])
+def home():
+    data = flask.request.get_json()
+    bot_response = kernel.respond(data)
+    return bot_response
+
+serve(app, host='localhost', port=8877)
+
+# Python deployment and webapi server
+# Scarlett multilingual
